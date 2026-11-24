@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сумка Гермионы — Незримое расширение</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Cinzel для легкого магического акцента -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Identity Services (для OAuth с Google Диском) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        magic: ['Cinzel', 'serif'],
+                    },
+                    colors: {
+                        void: {
+                            950: '#07080d',
+                            900: '#0d0f1a',
+                            800: '#141829',
+                            700: '#1e233a',
+                        },
+                        gold: {
+                            300: '#fde08d',
+                            400: '#f5c451',
+                            500: '#d99b26',
+                            600: '#b07814',
+                        },
+                        amethyst: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            900: '#2e1065',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Кастомные скроллбары и магические эффекты */
+        body {
+            background-color: #07080d;
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(124, 58, 237, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 20%, rgba(245, 196, 81, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 85%, rgba(79, 70, 229, 0.1) 0%, transparent 50%);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        .glass-panel {
+            background: rgba(20, 24, 41, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: linear-gradient(145deg, rgba(26, 31, 53, 0.85) 0%, rgba(15, 18, 32, 0.92) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(245, 196, 81, 0.35);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.6), 0 0 20px -5px rgba(139, 92, 246, 0.18);
+        }
+
+        .bag-portal {
+            box-shadow: inset 0 2px 24px rgba(0, 0, 0, 0.65), 0 0 30px rgba(139, 92, 246, 0.1);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .bag-portal:focus-within, .bag-portal.drag-active {
+            border-color: rgba(245, 196, 81, 0.55);
+            box-shadow: inset 0 2px 24px rgba(0, 0, 0, 0.7), 0 0 35px rgba(245, 196, 81, 0.16);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.04); }
+        }
+
+        .animate-magic-pulse {
+            animation: pulse-glow 2.4s infinite ease-in-out;
+        }
+
+        @keyframes dropIn {
+            0% { opacity: 0; transform: translateY(-16px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .item-appear {
+            animation: dropIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Скрытие стандартного скроллбара для горизонтальных вкладок на мобильных */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-amethyst-500/30 selection:text-gold-300">
+
+    <!-- Всплывающее уведомление (Toast вместо alert) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Верхняя навигационная панель -->
+    <header class="sticky top-0 z-30 glass-panel border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+            <!-- Логотип и название -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amethyst-600 via-indigo-900 to-void-900 border border-gold-400/40 flex items-center justify-center shadow-lg shadow-amethyst-900/40 relative">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-gold-400 animate-magic-pulse"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-magic text-lg sm:text-xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-amber-100 to-amethyst-300">
+                            Сумка Гермионы
+                        </h1>
+                        <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amethyst-500/20 text-amethyst-300 border border-amethyst-500/30">
+                            Незримое расширение ∞
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400">Бездонное AI-пространство с привязкой к Google Диску</p>
+                </div>
+            </div>
+
+            <!-- Правая панель: Статус Google Диска и настройки -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Счетчик предметов -->
+                <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-void-950/70 border border-white/5 text-xs text-slate-300">
+                    <i data-lucide="layers" class="w-3.5 h-3.5 text-gold-400"></i>
+                    <span>Внутри: <strong id="total-items-badge" class="text-white">0</strong></span>
+                </div>
+
+                <!-- Статус Google Диска -->
+                <button id="gdrive-status-btn" onclick="openDriveModal()" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-void-800/90 hover:bg-void-700 border border-white/10 text-xs sm:text-sm font-medium transition cursor-pointer">
+                    <span id="gdrive-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <svg class="w-4 h-4 text-slate-200" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5M9.73 15L6.3 21h13.12l3.43-6m-.57-1L15.42 2H8.57l6.86 12h6.85Z"/>
+                    </svg>
+                    <span id="gdrive-status-text" class="text-slate-200">Google Диск</span>
+                </button>
+
+                <!-- Кнопка быстрой синхронизации (если подключен OAuth) -->
+                <button id="gdrive-quick-sync" onclick="syncWithGoogleDrive()" title="Синхронизировать с Google Диском" class="hidden p-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 transition cursor-pointer">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контейнер -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-7">
+
+        <!-- Блок 1: Портал «Кинуть в сумку» -->
+        <section aria-label="Добавить в сумку" class="relative">
+            <div id="drop-zone" class="glass-panel bag-portal rounded-2xl p-4 sm:p-6 border border-white/10 relative overflow-hidden">
+                <!-- Декоративное сияние -->
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-amethyst-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2 text-sm font-medium text-gold-300">
+                        <i data-lucide="wand-2" class="w-4 h-4"></i>
+                        <span>Кинуть в сумку</span>
+                        <span class="text-xs text-slate-400 font-normal hidden sm:inline">— ИИ сам поймет, что это, придумает теги, выделит дедлайн и разложит по полкам</span>
+                    </div>
+                    <span id="voice-status" class="hidden text-xs text-rose-400 flex items-center gap-1.5 animate-pulse">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span> Слушаю вас...
+                    </span>
+                </div>
+
+                <!-- Поле ввода -->
+                <textarea
+                    id="bag-input"
+                    rows="3"
+                    placeholder="Бросьте сюда мысль, заметку, ссылку, кусок кода, список покупок или напоминание (например: «Позвонить врачу завтра в 15:00»)... Или просто перетащите файлы прямо сюда."
+                    class="w-full bg-void-950/60 text-slate-100 placeholder-slate-500 rounded-xl p-3.5 sm:p-4 border border-white/5 focus:border-amethyst-500/40 focus:outline-none resize-y text-sm sm:text-base leading-relaxed transition"
+                ></textarea>
+
+                <!-- Превью прикрепленных файлов перед отправкой -->
+                <div id="pending-files-list" class="hidden flex-wrap gap-2 mt-3"></div>
+
+                <!-- Панель действий портала -->
+                <div class="mt-3.5 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Прикрепить файл -->
+                        <input type="file" id="file-input" multiple class="hidden" onchange="handleFileSelect(event)">
+                        <button type="button" onclick="document.getElementById('file-input').click()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-void-800 hover:bg-void-700 text-slate-200 border border-white/10 text-xs sm:text-sm font-medium transition cursor-pointer">
+                            <i data-lucide="paperclip" class="w-4 h-4 text-amethyst-400"></i>
+                            <span>Прикрепить файлы</span>
+                        </button>
+
+                        <!-- Голосовой ввод -->
+                        <button type="button" id="voice-btn" onclick="toggleVoiceInput()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-void-800 hover:bg-void-700 text-slate-200 border border-white/10 text-xs sm:text-sm font-medium transition cursor-pointer" title="Надиктовать голосом">
+                            <i data-lucide="mic" class="w-4 h-4 text-gold-400"></i>
+                            <span class="hidden sm:inline">Надиктовать</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-auto">
+                        <span class="hidden md:inline text-xs text-slate-500 mr-1">Ctrl + Enter</span>
+                        <button type="button" id="toss-btn" onclick="tossIntoBag()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amethyst-600 to-indigo-600 hover:from-amethyst-500 hover:to-indigo-500 text-white font-medium text-sm shadow-lg shadow-amethyst-950/60 border border-amethyst-400/30 transition cursor-pointer disabled:opacity-50">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-gold-300"></i>
+                            <span id="toss-btn-text">Кинуть в сумку</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Блок 2: Заклинание поиска «Акцио!» -->
+        <section aria-label="Поиск по сумке" class="space-y-4">
+            <div class="glass-panel rounded-2xl p-3 sm:p-4 border border-white/10 flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                    <input
+                        type="text"
+                        id="search-input"
+                        oninput="handleInstantSearch()"
+                        onkeydown="if(event.key === 'Enter') performSemanticSearch()"
+                        placeholder="Акцио! Поиск по словам, тегам или спросите ИИ своими словами (например: «идея про рассказ»)..."
+                        class="w-full bg-void-950/70 text-slate-100 placeholder-slate-500 pl-10 pr-9 py-2.5 rounded-xl border border-white/5 focus:border-gold-400/40 focus:outline-none text-sm"
+                    >
+                    <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 cursor-pointer">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <button type="button" id="ai-search-btn" onclick="performSemanticSearch()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gold-500/15 hover:bg-gold-500/25 text-gold-300 border border-gold-400/30 text-sm font-medium transition shrink-0 cursor-pointer">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>Акцио! AI-поиск по смыслу</span>
+                </button>
+            </div>
+
+            <!-- Блок ответа от AI-поиска (появляется при семантическом поиске) -->
+            <div id="ai-search-banner" class="hidden glass-panel rounded-2xl p-4 border border-gold-400/35 bg-gradient-to-r from-amethyst-900/30 to-void-900/90">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 rounded-lg bg-gold-400/15 text-gold-300 mt-0.5">
+                            <i data-lucide="wand-2" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-semibold uppercase tracking-wider text-gold-300 mb-1">Результат заклинания «Акцио!»</h3>
+                            <p id="ai-search-explanation" class="text-sm text-slate-200 leading-relaxed"></p>
+                        </div>
+                    </div>
+                    <button onclick="clearSearch()" class="text-xs text-slate-400 hover:text-white px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition shrink-0 cursor-pointer">
+                        Сбросить фильтр
+                    </button>
+                </div>
+            </div>
+
+            <!-- Вкладки категорий (Полки сумки) -->
+            <div class="flex items-center justify-between gap-3">
+                <div id="category-tabs" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 flex-1">
+                    <!-- Генерируются через JS -->
+                </div>
+
+                <button onclick="confirmEmptyBag()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-slate-400 hover:text-rose-300 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition shrink-0 cursor-pointer" title="Очистить всё содержимое сумки">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <span>Опустошить</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Блок 3: Содержимое сумки (Сетка карточек) -->
+        <section aria-label="Содержимое сумки">
+            <div id="items-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                <!-- Карточки рендерятся через JS -->
+            </div>
+
+            <!-- Пустое состояние -->
+            <div id="empty-state" class="hidden glass-panel rounded-2xl p-10 text-center border border-white/5 my-6">
+                <div class="w-16 h-16 rounded-2xl bg-void-800 border border-white/10 flex items-center justify-center mx-auto mb-4 text-amethyst-400">
+                    <i data-lucide="sparkles" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-200 mb-1">В этом отделении сумки пока пусто</h3>
+                <p class="text-sm text-slate-400 max-w-md mx-auto mb-5">
+                    Киньте любую заметку, ссылку, напоминание или файл в поле выше — незримое расширение вместит всё и аккуратно разложит по полкам.
+                </p>
+                <button onclick="restoreDemoItems()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-void-800 hover:bg-void-700 text-xs font-medium text-gold-300 border border-gold-400/25 transition cursor-pointer">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    <span>Заполнить демонстрационными предметами</span>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Модальное окно 1: Детальный просмотр и «Спросить ИИ по этому предмету» -->
+    <div id="item-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+        <div class="glass-panel rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border border-white/15 shadow-2xl overflow-hidden">
+            <!-- Шапка модалки -->
+            <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between gap-3 bg-void-900/80">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <span id="modal-category-badge" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-amethyst-500/20 text-amethyst-300 border border-amethyst-500/30 shrink-0"></span>
+                    <span id="modal-date" class="text-xs text-slate-400 truncate"></span>
+                </div>
+                <button onclick="closeItemModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Тело модалки -->
+            <div class="p-5 overflow-y-auto space-y-5 flex-1">
+                <div>
+                    <input id="modal-title-input" type="text" class="w-full bg-transparent text-xl font-bold text-white focus:outline-none focus:bg-void-950/60 rounded-lg px-2 py-1 -mx-2 border border-transparent focus:border-white/10" onchange="updateCurrentItemField('title', this.value)">
+                    <p id="modal-summary" class="text-xs text-gold-300/90 mt-1.5 italic"></p>
+                </div>
+
+                <!-- Дедлайн / Задача если есть -->
+                <div id="modal-task-box" class="hidden flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/25">
+                    <label class="flex items-center gap-2.5 cursor-pointer text-sm text-amber-200">
+                        <input id="modal-task-done" type="checkbox" onchange="updateCurrentItemField('completed', this.checked)" class="w-4 h-4 rounded accent-gold-400">
+                        <span>Выполнено</span>
+                    </label>
+                    <span id="modal-deadline" class="text-xs font-medium text-gold-300"></span>
+                </div>
+
+                <!-- Полный текст содержимого -->
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5">Содержимое</label>
+                    <textarea id="modal-content-input" rows="6" onchange="updateCurrentItemField('content', this.value)" class="w-full bg-void-950/70 text-slate-200 text-sm rounded-xl p-3.5 border border-white/10 focus:border-amethyst-500/40 focus:outline-none leading-relaxed"></textarea>
+                </div>
+
+                <!-- Прикрепленный файл (если есть) -->
+                <div id="modal-file-box" class="hidden p-3.5 rounded-xl bg-void-950/80 border border-white/10 space-y-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <i data-lucide="file-text" class="w-5 h-5 text-amethyst-400 shrink-0"></i>
+                            <div class="min-w-0">
+                                <p id="modal-file-name" class="text-sm font-medium text-slate-200 truncate"></p>
+                                <p id="modal-file-meta" class="text-xs text-slate-500"></p>
+                            </div>
+                        </div>
+                        <button id="modal-download-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amethyst-600 hover:bg-amethyst-500 text-white text-xs font-medium transition shrink-0 cursor-pointer">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>Скачать</span>
+                        </button>
+                    </div>
+                    <img id="modal-image-preview" class="hidden max-h-64 rounded-lg object-contain mx-auto border border-white/10" alt="Превью вложения">
+                </div>
+
+                <!-- Редактирование тегов -->
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5">Теги (через запятую)</label>
+                    <input id="modal-tags-input" type="text" onchange="updateCurrentItemTags(this.value)" class="w-full bg-void-950/70 text-slate-200 text-xs rounded-xl px-3 py-2 border border-white/10 focus:border-amethyst-500/40 focus:outline-none">
+                </div>
+
+                <!-- Магический помощник по предмету (Gemini AI) -->
+                <div class="p-4 rounded-xl bg-gradient-to-br from-amethyst-950/60 to-void-900 border border-amethyst-500/30 space-y-3">
+                    <div class="flex items-center gap-2 text-xs font-semibold text-amethyst-300 uppercase tracking-wider">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-gold-400"></i>
+                        <span>Спросить ИИ по этому предмету</span>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="askAiAboutItem('Перескажи кратко суть и выдели 3 главных вывода')" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-slate-200 border border-white/10 transition cursor-pointer">
+                            Краткая суть
+                        </button>
+                        <button onclick="askAiAboutItem('Составь пошаговый план действий на основе этого')" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-slate-200 border border-white/10 transition cursor-pointer">
+                            Составить план
+                        </button>
+                        <button onclick="askAiAboutItem('Развей эту идею, предложи 3 креативных продолжения')" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-slate-200 border border-white/10 transition cursor-pointer">
+                            Продолжить идею
+                        </button>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input id="modal-ai-prompt" type="text" placeholder="Задайте свой вопрос по этому материалу..." onkeydown="if(event.key==='Enter') askAiAboutItem()" class="flex-1 bg-void-950/80 text-xs text-slate-100 placeholder-slate-500 px-3 py-2 rounded-lg border border-white/10 focus:border-gold-400/40 focus:outline-none">
+                        <button id="modal-ai-ask-btn" onclick="askAiAboutItem()" class="px-3.5 py-2 rounded-lg bg-gold-500/20 hover:bg-gold-500/30 text-gold-300 border border-gold-400/30 text-xs font-medium transition cursor-pointer">
+                            Спросить
+                        </button>
+                    </div>
+
+                    <div id="modal-ai-response" class="hidden text-xs sm:text-sm text-slate-200 bg-void-950/80 p-3.5 rounded-xl border border-white/10 leading-relaxed whitespace-pre-wrap"></div>
+                </div>
+            </div>
+
+            <!-- Футер модалки -->
+            <div class="px-5 py-3 border-t border-white/10 bg-void-900/80 flex items-center justify-between">
+                <button onclick="deleteCurrentItem()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-rose-400 hover:bg-rose-500/15 transition cursor-pointer">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <span>Удалить из сумки</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="copyCurrentItem()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-void-800 hover:bg-void-700 text-xs text-slate-200 border border-white/10 transition cursor-pointer">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                        <span>Копировать текст</span>
+                    </button>
+                    <button onclick="closeItemModal()" class="px-4 py-1.5 rounded-lg bg-amethyst-600 hover:bg-amethyst-500 text-xs font-medium text-white transition cursor-pointer">
+                        Готово
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно 2: Привязка и синхронизация с Google Диском -->
+    <div id="drive-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+        <div class="glass-panel rounded-2xl max-w-lg w-full border border-white/15 shadow-2xl overflow-hidden">
+            <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-void-900/80">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-5 h-5 text-gold-400" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5M9.73 15L6.3 21h13.12l3.43-6m-.57-1L15.42 2H8.57l6.86 12h6.85Z"/>
+                    </svg>
+                    <h2 class="text-base font-semibold text-white">Привязка к Google Диску</h2>
+                </div>
+                <button onclick="closeDriveModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-5 text-sm">
+                <!-- Текущий статус -->
+                <div class="p-3.5 rounded-xl bg-void-950/70 border border-white/10 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-400">Статус хранилища</p>
+                        <p id="drive-modal-status" class="font-medium text-slate-200 mt-0.5">Локальное хранилище браузера (Автосохранение)</p>
+                        <p id="drive-last-sync" class="text-[11px] text-slate-500 mt-0.5"></p>
+                    </div>
+                    <span id="drive-modal-badge" class="px-2.5 py-1 rounded-full text-xs bg-amber-500/15 text-amber-300 border border-amber-500/30">Локально</span>
+                </div>
+
+                <!-- Вариант 1: Прямая OAuth-синхронизация (Google Drive API v3) -->
+                <div class="space-y-2.5">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gold-300">1. Прямая облачная синхронизация (Google Drive API)</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Укажите ваш OAuth 2.0 Client ID из Google Cloud Console (с разрешенным scope <code class="text-amethyst-300">drive.file</code>), чтобы сумка автоматически создала папку <strong>«Сумка Гермионы»</strong> на вашем Диске и хранила там индекс и файлы.
+                    </p>
+                    <div class="flex gap-2">
+                        <input
+                            type="text"
+                            id="gdrive-client-id"
+                            placeholder="Вставьте Google OAuth Client ID (...apps.googleusercontent.com)"
+                            class="flex-1 bg-void-950/80 text-xs text-slate-100 placeholder-slate-500 px-3 py-2.5 rounded-xl border border-white/10 focus:border-gold-400/40 focus:outline-none"
+                        >
+                        <button onclick="connectGoogleDriveOAuth()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amethyst-600 to-indigo-600 hover:from-amethyst-500 hover:to-indigo-500 text-white text-xs font-medium transition shrink-0 cursor-pointer">
+                            Подключить
+                        </button>
+                    </div>
+                    <div id="gdrive-connected-actions" class="hidden pt-1 flex items-center gap-2">
+                        <button onclick="syncWithGoogleDrive()" class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-medium transition cursor-pointer">
+                            <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+                            <span>Синхронизировать сейчас</span>
+                        </button>
+                        <button onclick="disconnectGoogleDrive()" class="px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs transition cursor-pointer">
+                            Отключить
+                        </button>
+                    </div>
+                </div>
+
+                <hr class="border-white/10">
+
+                <!-- Вариант 2: Мгновенный бэкап / перенос файла на Google Диск -->
+                <div class="space-y-2.5">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-amethyst-300">2. Быстрый бэкап / перенос одним файлом</h3>
+                    <p class="text-xs text-slate-400">
+                        Скачайте единый магический слепок всей сумки (<code class="text-slate-300">.hermione.json</code>) для загрузки в любую папку на Google Диске или восстановите сумку из файла.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <button onclick="exportBagBackup()" class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-void-800 hover:bg-void-700 text-slate-200 border border-white/10 text-xs font-medium transition cursor-pointer">
+                            <i data-lucide="download-cloud" class="w-4 h-4 text-gold-400"></i>
+                            <span>Экспортировать для Диска</span>
+                        </button>
+
+                        <label class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-void-800 hover:bg-void-700 text-slate-200 border border-white/10 text-xs font-medium transition cursor-pointer">
+                            <i data-lucide="upload-cloud" class="w-4 h-4 text-amethyst-400"></i>
+                            <span>Импортировать слепок</span>
+                            <input type="file" accept=".json" class="hidden" onchange="importBagBackup(event)">
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения очистки (вместо confirm()) -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+        <div class="glass-panel rounded-2xl max-w-sm w-full p-5 border border-white/15 shadow-2xl space-y-4">
+            <div class="flex items-center gap-3 text-rose-400">
+                <div class="p-2 rounded-xl bg-rose-500/15">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                </div>
+                <h3 class="font-semibold text-white">Опустошить сумку?</h3>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+                Все предметы из локальной сумки будут удалены. Рекомендуем предварительно сделать бэкап для Google Диска, если внутри есть важные заметки.
+            </p>
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button onclick="document.getElementById('confirm-modal').classList.add('hidden')" class="px-3.5 py-2 rounded-xl bg-void-800 hover:bg-void-700 text-xs text-slate-300 transition cursor-pointer">
+                    Отмена
+                </button>
+                <button onclick="executeEmptyBag()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-medium text-white transition cursor-pointer">
+                    Да, опустошить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. КОНФИГУРАЦИЯ И СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+        // =========================================================================
+        const CATEGORIES = [
+            { id: 'all', name: 'Всё в сумке', icon: 'infinity' },
+            { id: 'Заметки и идеи', name: 'Заметки и идеи', icon: 'lightbulb' },
+            { id: 'Напоминания и задачи', name: 'Напоминания и задачи', icon: 'check-circle-2' },
+            { id: 'Файлы и документы', name: 'Файлы и документы', icon: 'folder-open' },
+            { id: 'Ссылки и ресурсы', name: 'Ссылки и ресурсы', icon: 'link' },
+            { id: 'Код и скрипты', name: 'Код и скрипты', icon: 'code-2' },
+            { id: 'Творчество и тексты', name: 'Творчество и тексты', icon: 'feather' }
+        ];
+
+        const CATEGORY_STYLES = {
+            'Заметки и идеи': 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+            'Напоминания и задачи': 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+            'Файлы и документы': 'bg-sky-500/15 text-sky-300 border-sky-500/30',
+            'Ссылки и ресурсы': 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
+            'Код и скрипты': 'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/30',
+            'Творчество и тексты': 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+        };
+
+        let bagItems = [];
+        let pendingFiles = [];
+        let activeCategory = 'all';
+        let aiFilteredIds = null; // null = обычный режим, массив ID = результат AI-поиска
+        let currentOpenedItemId = null;
+
+        // Переменные для Google Drive OAuth
+        let gdriveAccessToken = null;
+        let gdriveFolderId = localStorage.getItem('hermione_gdrive_folder_id') || null;
+        let gdriveFileId = localStorage.getItem('hermione_gdrive_file_id') || null;
+
+        // =========================================================================
+        // 2. ИНДЕКСИРОВАННОЕ ЛОКАЛЬНОЕ ХРАНИЛИЩЕ (IndexedDB для поддержки крупных файлов)
+        // =========================================================================
+        const DB_NAME = 'HermioneBagDB';
+        const STORE_NAME = 'items';
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function loadItemsFromDB() {
+            try {
+                const db = await openDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_NAME, 'readonly');
+                    const store = tx.objectStore(STORE_NAME);
+                    const req = store.getAll();
+                    req.onsuccess = () => {
+                        const items = req.result || [];
+                        items.sort((a, b) => b.createdAt - a.createdAt);
+                        resolve(items);
+                    };
+                    req.onerror = () => reject(req.error);
+                });
+            } catch (e) {
+                const fallback = localStorage.getItem('hermione_bag_fallback');
+                return fallback ? JSON.parse(fallback) : [];
+            }
+        }
+
+        async function saveAllItemsToDB(items) {
+            try {
+                const db = await openDB();
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                store.clear();
+                items.forEach(item => store.put(item));
+            } catch (e) {
+                try {
+                    localStorage.setItem('hermione_bag_fallback', JSON.stringify(items));
+                } catch (err) {
+                    console.warn('Локальное хранилище переполнено', err);
+                }
+            }
+            // Если подключен Google Диск — фоновая синхронизация
+            if (gdriveAccessToken) {
+                syncWithGoogleDrive(true);
+            }
+        }
+
+        // =========================================================================
+        // 3. ДЕМОНСТРАЦИОННЫЕ ДАННЫЕ ПРИ ПЕРВОМ ЗАПУСКЕ
+        // =========================================================================
+        function getDemoItems() {
+            const now = Date.now();
+            return [
+                {
+                    id: 'demo-1',
+                    title: 'Идея рассказа: «Часовщик из туманного порта»',
+                    category: 'Творчество и тексты',
+                    content: 'Главный герой чинит старинные морские хронометры и обнаруживает, что одни из часов отсчитывают время до событий, которые ещё не произошли в городе. Каждый поворот заводного ключа меняет погоду в гавани.',
+                    summary: 'Завязка мистического рассказа о часовщике, чьи хронометры предсказывают будущее и влияют на погоду.',
+                    tags: ['рассказ', 'магический-реализм', 'сюжет', 'идея'],
+                    deadline: null,
+                    completed: false,
+                    file: null,
+                    createdAt: now - 3600000 * 5
+                },
+                {
+                    id: 'demo-2',
+                    title: 'Подготовить презентацию и отправить отчёт',
+                    category: 'Напоминания и задачи',
+                    content: 'Собрать финальные метрики за квартал, проверить графики и отправить письмо команде до пятницы 18:00.',
+                    summary: 'Собрать метрики и отправить квартальный отчёт.',
+                    tags: ['работа', 'отчёт', 'дедлайн'],
+                    deadline: 'Пятница, 18:00',
+                    completed: false,
+                    file: null,
+                    createdAt: now - 3600000 * 3
+                },
+                {
+                    id: 'demo-3',
+                    title: 'Скрипт на Python для быстрого парсинга JSON',
+                    category: 'Код и скрипты',
+                    content: 'import json\nfrom pathlib import Path\n\ndef load_bag(path: str):\n    data = json.loads(Path(path).read_text(encoding="utf-8"))\n    return [item for item in data if not item.get("completed")]',
+                    summary: 'Функция на Python для чтения JSON-файла и фильтрации невыполненных задач.',
+                    tags: ['python', 'json', 'скрипт', 'утилита'],
+                    deadline: null,
+                    completed: false,
+                    file: null,
+                    createdAt: now - 3600000 * 2
+                },
+                {
+                    id: 'demo-4',
+                    title: 'Документация Gemini API — структурированный вывод',
+                    category: 'Ссылки и ресурсы',
+                    content: 'https://ai.google.dev/gemini-api/docs/structured-output — полезная шпаргалка по настройке responseSchema для гарантированного JSON-ответа.',
+                    summary: 'Ссылка на официальную документацию по JSON-схемам в Gemini API.',
+                    tags: ['gemini', 'api', 'документация', 'ai'],
+                    deadline: null,
+                    completed: false,
+                    file: null,
+                    createdAt: now - 3600000
+                }
+            ];
+        }
+
+        // =========================================================================
+        // 4. ИНТЕГРАЦИЯ С GEMINI API (Сортировка, поиск «Акцио!», вопросы по предмету)
+        // =========================================================================
+        const apiKey = ""; // Автоматически подставляется средой выполнения
+
+        async function fetchGeminiWithRetry(payload, maxRetries = 3) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (err) {
+                    if (attempt === maxRetries - 1) throw err;
+                    await new Promise(res => setTimeout(res, Math.pow(2, attempt) * 1000));
+                }
+            }
+        }
+
+        // Интеллектуальный анализ и сортировка при добавлении в сумку
+        async function classifyWithAI(rawText, fileInfo) {
+            const promptParts = [];
+            let description = `Проанализируй новый элемент, который пользователь положил в "Сумку Гермионы", и распредели его.\n`;
+            if (rawText) description += `Текст пользователя:\n"""${rawText}"""\n`;
+            if (fileInfo) {
+                description += `Прикреплённый файл: имя="${fileInfo.name}", тип="${fileInfo.type}", размер=${fileInfo.sizeFormatted}.\n`;
+                if (fileInfo.textPreview) {
+                    description += `Фрагмент содержимого файла:\n"""${fileInfo.textPreview.slice(0, 3000)}"""\n`;
+                }
+            }
+
+            promptParts.push({ text: description });
+
+            // Если прикреплено изображение — передаем его в Gemini для визуального понимания
+            if (fileInfo && fileInfo.type.startsWith('image/') && fileInfo.base64Raw) {
+                promptParts.push({
+                    inlineData: {
+                        mimeType: fileInfo.type,
+                        data: fileInfo.base64Raw
+                    }
+                });
+            }
+
+            const payload = {
+                contents: [{ role: 'user', parts: promptParts }],
+                systemInstruction: {
+                    parts: [{
+                        text: `Ты — магический ИИ-архивариус «Сумки Гермионы». Твоя задача — мгновенно понять суть любого текста, ссылки или файла, который бросили в сумку, придумать емкий заголовок на русском языке, выбрать наиболее подходящую категорию из строго заданного списка, подобрать 2-4 полезных тега на русском языке (в нижнем регистре), сделать краткую выжимку (если текст длинный или это файл/картинка) и извлечь дедлайн, если это задача или напоминание.`
+                    }]
+                },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            category: {
+                                type: "STRING",
+                                enum: [
+                                    "Заметки и идеи",
+                                    "Напоминания и задачи",
+                                    "Файлы и документы",
+                                    "Ссылки и ресурсы",
+                                    "Код и скрипты",
+                                    "Творчество и тексты"
+                                ]
+                            },
+                            title: { type: "STRING", description: "Краткий понятный заголовок до 60 символов" },
+                            summary: { type: "STRING", description: "Краткая суть в 1 предложение" },
+                            tags: {
+                                type: "ARRAY",
+                                items: { type: "STRING" },
+                                description: "От 2 до 4 тегов в нижнем регистре"
+                            },
+                            deadline: {
+                                type: "STRING",
+                                nullable: true,
+                                description: "Извлеченная дата/время напоминания (например: 'Завтра в 15:00' или '25 ноября'), если применимо, иначе null"
+                            }
+                        },
+                        required: ["category", "title", "summary", "tags"]
+                    }
+                }
+            };
+
+            try {
+                const result = await fetchGeminiWithRetry(payload);
+                const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (jsonText) {
+                    return JSON.parse(jsonText);
+                }
+            } catch (e) {
+                // Используем локальную эвристику при недоступности API
+            }
+            return classifyFallback(rawText, fileInfo);
+        }
+
+        // Мгновенная локальная эвристика (Fallback)
+        function classifyFallback(text, fileInfo) {
+            const lower = (text || '').toLowerCase();
+            let category = 'Заметки и идеи';
+            let deadline = null;
+            const tags = [];
+
+            if (fileInfo) {
+                category = 'Файлы и документы';
+                const ext = fileInfo.name.split('.').pop()?.toLowerCase();
+                if (ext) tags.push(ext);
+                if (['py', 'js', 'ts', 'html', 'css', 'cpp', 'java', 'json'].includes(ext)) {
+                    category = 'Код и скрипты';
+                    tags.push('код');
+                }
+            } else if (/https?:\/\/[^\s]+/.test(lower)) {
+                category = 'Ссылки и ресурсы';
+                tags.push('ссылка', 'ресурс');
+            } else if (/(function\s|const\s|let\s|import\s|def\s|class\s|<html|\{\s*\n)/.test(text || '')) {
+                category = 'Код и скрипты';
+                tags.push('код', 'сниппет');
+            } else if (/(напомни|позвонить|купить|сделать|встреча|дедлайн|завтра|сегодня в|оплатить|записаться)/.test(lower)) {
+                category = 'Напоминания и задачи';
+                tags.push('задача', 'напоминание');
+                const timeMatch = text.match(/(завтра|послезавтра|сегодня|в понедельник|во вторник|в среду|в четверг|в пятницу|в субботу|в воскресенье|\d{1,2}[:.]\d{2})/i);
+                if (timeMatch) deadline = timeMatch[0];
+            } else if (/(рассказ|глава|стих|сценарий|персонаж|сюжет|эссе)/.test(lower)) {
+                category = 'Творчество и тексты';
+                tags.push('текст', 'творчество');
+            } else {
+                tags.push('заметка', 'мысли');
+            }
+
+            const firstLine = (text || fileInfo?.name || 'Новый предмет').split('\n')[0].trim();
+            const title = firstLine.length > 55 ? firstLine.slice(0, 52) + '...' : firstLine;
+            const summary = (text && text.length > 90) ? text.slice(0, 87) + '...' : (fileInfo ? `Файл ${fileInfo.name} (${fileInfo.sizeFormatted})` : firstLine);
+
+            return { category, title, summary, tags: tags.slice(0, 4), deadline };
+        }
+
+        // Умный семантический поиск «Акцио!» по смыслу
+        async function performSemanticSearch() {
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) {
+                clearSearch();
+                return;
+            }
+            if (bagItems.length === 0) {
+                showToast('Сумка пуста — заклинанию «Акцио!» нечего притягивать.', 'info');
+                return;
+            }
+
+            const btn = document.getElementById('ai-search-btn');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Ищу в глубинах...</span>`;
+            lucide.createIcons();
+
+            const catalog = bagItems.map(item => ({
+                id: item.id,
+                category: item.category,
+                title: item.title,
+                summary: item.summary,
+                tags: item.tags,
+                contentSnippet: (item.content || '').slice(0, 350),
+                fileName: item.file?.name || null
+            }));
+
+            const payload = {
+                contents: [{
+                    role: 'user',
+                    parts: [{
+                        text: `Запрос пользователя: "${query}"\n\nСодержимое сумки (JSON):\n${JSON.stringify(catalog)}`
+                    }]
+                }],
+                systemInstruction: {
+                    parts: [{
+                        text: `Ты — поисковое заклинание «Акцио!» в «Сумке Гермионы». Найди среди предметов сумки все элементы, которые подходят по смыслу, теме или контексту под запрос пользователя (даже если точные слова не совпадают). Верни список ID подходящих предметов (от самых релевантных к менее релевантным) и краткое дружелюбное объяснение на русском языке (1-2 предложения), что именно нашлось.`
+                    }]
+                },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            matchedIds: {
+                                type: "ARRAY",
+                                items: { type: "STRING" }
+                            },
+                            explanation: {
+                                type: "STRING"
+                            }
+                        },
+                        required: ["matchedIds", "explanation"]
+                    }
+                }
+            };
+
+            try {
+                const res = await fetchGeminiWithRetry(payload);
+                const parsed = JSON.parse(res.candidates[0].content.parts[0].text);
+                aiFilteredIds = parsed.matchedIds || [];
+                activeCategory = 'all';
+
+                const banner = document.getElementById('ai-search-banner');
+                const expEl = document.getElementById('ai-search-explanation');
+                expEl.textContent = parsed.explanation || `Найдено предметов: ${aiFilteredIds.length}`;
+                banner.classList.remove('hidden');
+
+                renderCategoryTabs();
+                renderItems();
+            } catch (e) {
+                // Fallback на обычный текстовый поиск
+                aiFilteredIds = null;
+                handleInstantSearch();
+                showToast('Выполнен быстрый локальный поиск по словам и тегам.', 'info');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                lucide.createIcons();
+            }
+        }
+
+        // Спросить ИИ по конкретному предмету внутри модального окна
+        async function askAiAboutItem(presetPrompt) {
+            const item = bagItems.find(i => i.id === currentOpenedItemId);
+            if (!item) return;
+
+            const inputEl = document.getElementById('modal-ai-prompt');
+            const question = presetPrompt || inputEl.value.trim();
+            if (!question) return;
+
+            const responseBox = document.getElementById('modal-ai-response');
+            const askBtn = document.getElementById('modal-ai-ask-btn');
+
+            responseBox.classList.remove('hidden');
+            responseBox.textContent = '✨ Сумка анализирует содержимое...';
+            askBtn.disabled = true;
+
+            const parts = [{
+                text: `Предмет из сумки:\nЗаголовок: ${item.title}\nКатегория: ${item.category}\nСодержимое:\n${item.content || '(без текста)'}\n${item.file ? `Файл: ${item.file.name}\n${item.file.textPreview || ''}` : ''}\n\nВопрос пользователя: ${question}`
+            }];
+
+            if (item.file && item.file.type.startsWith('image/') && item.file.base64Raw) {
+                parts.push({
+                    inlineData: {
+                        mimeType: item.file.type,
+                        data: item.file.base64Raw
+                    }
+                });
+            }
+
+            try {
+                const res = await fetchGeminiWithRetry({
+                    contents: [{ role: 'user', parts }],
+                    systemInstruction: {
+                        parts: [{ text: 'Отвечай четко, структурированно и по делу на русском языке. Без лишнего вступления.' }]
+                    }
+                });
+                const answer = res?.candidates?.[0]?.content?.parts?.[0]?.text || 'Не удалось получить ответ.';
+                responseBox.textContent = answer;
+                if (!presetPrompt) inputEl.value = '';
+            } catch (e) {
+                responseBox.textContent = 'Не удалось связаться с магическим оракулом. Попробуйте ещё раз чуть позже.';
+            } finally {
+                askBtn.disabled = false;
+            }
+        }
+
+        // =========================================================================
+        // 5. ДОБАВЛЕНИЕ В СУМКУ, РАБОТА С ФАЙЛАМИ И ГОЛОСОВОЙ ВВОД
+        // =========================================================================
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Б';
+            const k = 1024;
+            const sizes = ['Б', 'КБ', 'МБ', 'ГБ'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function readFileAsData(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const dataUrl = reader.result;
+                    const base64Raw = dataUrl.split(',')[1];
+                    const isTextLike = file.type.startsWith('text/') ||
+                        /\.(txt|md|json|js|ts|py|html|css|csv|xml|yaml|yml|log)$/i.test(file.name);
+
+                    if (isTextLike) {
+                        const textReader = new FileReader();
+                        textReader.onload = () => {
+                            resolve({
+                                name: file.name,
+                                type: file.type || 'text/plain',
+                                size: file.size,
+                                sizeFormatted: formatBytes(file.size),
+                                dataUrl,
+                                base64Raw,
+                                textPreview: textReader.result.slice(0, 8000)
+                            });
+                        };
+                        textReader.readAsText(file);
+                    } else {
+                        resolve({
+                            name: file.name,
+                            type: file.type || 'application/octet-stream',
+                            size: file.size,
+                            sizeFormatted: formatBytes(file.size),
+                            dataUrl,
+                            base64Raw,
+                            textPreview: null
+                        });
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function handleFileSelect(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
+            for (const f of files) {
+                const parsed = await readFileAsData(f);
+                pendingFiles.push(parsed);
+            }
+            event.target.value = '';
+            renderPendingFiles();
+        }
+
+        function renderPendingFiles() {
+            const container = document.getElementById('pending-files-list');
+            if (pendingFiles.length === 0) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
+            }
+            container.classList.remove('hidden');
+            container.classList.add('flex');
+            container.innerHTML = pendingFiles.map((f, idx) => `
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amethyst-500/15 border border-amethyst-500/30 text-xs text-slate-200">
+                    <i data-lucide="file" class="w-3.5 h-3.5 text-gold-400"></i>
+                    <span class="max-w-[160px] truncate">${escapeHtml(f.name)}</span>
+                    <span class="text-slate-400">(${f.sizeFormatted})</span>
+                    <button onclick="removePendingFile(${idx})" class="text-slate-400 hover:text-rose-400 ml-1 cursor-pointer">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function removePendingFile(idx) {
+            pendingFiles.splice(idx, 1);
+            renderPendingFiles();
+        }
+
+        // Drag & Drop на всю зону портала
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('drop-zone');
+            ['dragenter', 'dragover'].forEach(evtName => {
+                dropZone.addEventListener(evtName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('drag-active');
+                });
+            });
+            ['dragleave', 'drop'].forEach(evtName => {
+                dropZone.addEventListener(evtName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('drag-active');
+                });
+            });
+            dropZone.addEventListener('drop', async (e) => {
+                const files = Array.from(e.dataTransfer?.files || []);
+                if (files.length) {
+                    for (const f of files) {
+                        const parsed = await readFileAsData(f);
+                        pendingFiles.push(parsed);
+                    }
+                    renderPendingFiles();
+                    showToast(`Добавлено файлов в портал: ${files.length}`, 'info');
+                }
+            });
+
+            // Горячая клавиша Ctrl+Enter / Cmd+Enter в поле ввода
+            document.getElementById('bag-input').addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    tossIntoBag();
+                }
+            });
+        }
+
+        // Главная функция: кинуть в сумку и распределить через ИИ
+        async function tossIntoBag() {
+            const inputEl = document.getElementById('bag-input');
+            const text = inputEl.value.trim();
+            if (!text && pendingFiles.length === 0) {
+                showToast('Напишите что-нибудь или прикрепите файл, чтобы кинуть в сумку.', 'info');
+                inputEl.focus();
+                return;
+            }
+
+            const btn = document.getElementById('toss-btn');
+            const btnText = document.getElementById('toss-btn-text');
+            btn.disabled = true;
+            btnText.textContent = 'Сумка распределяет...';
+
+            try {
+                // Если файлов несколько, создаем отдельный предмет на каждый файл (прикрепляя текст к первому),
+                // либо один предмет, если только текст или 1 файл.
+                const tasks = [];
+                if (pendingFiles.length === 0) {
+                    tasks.push({ text, file: null });
+                } else {
+                    pendingFiles.forEach((f, idx) => {
+                        tasks.push({ text: idx === 0 ? text : '', file: f });
+                    });
+                }
+
+                for (const task of tasks) {
+                    const aiMeta = await classifyWithAI(task.text, task.file);
+                    const newItem = {
+                        id: 'item-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+                        title: aiMeta.title || 'Без названия',
+                        category: aiMeta.category || 'Заметки и идеи',
+                        content: task.text || (task.file?.textPreview ? task.file.textPreview.slice(0, 1500) : ''),
+                        summary: aiMeta.summary || '',
+                        tags: Array.isArray(aiMeta.tags) ? aiMeta.tags : [],
+                        deadline: aiMeta.deadline || null,
+                        completed: false,
+                        file: task.file,
+                        createdAt: Date.now()
+                    };
+                    bagItems.unshift(newItem);
+                }
+
+                inputEl.value = '';
+                pendingFiles = [];
+                renderPendingFiles();
+                clearSearch();
+                await saveAllItemsToDB(bagItems);
+                renderAll();
+
+                const lastCat = bagItems[0].category;
+                showToast(`Сложено в отдел «${lastCat}»!`, 'success');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Кинуть в сумку';
+            }
+        }
+
+        // Голосовая диктовка (Web Speech API)
+        let recognition = null;
+        let isRecording = false;
+
+        function toggleVoiceInput() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showToast('Ваш браузер не поддерживает голосовой ввод Web Speech API.', 'error');
+                return;
+            }
+
+            if (isRecording && recognition) {
+                recognition.stop();
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ru-RU';
+            recognition.interimResults = true;
+            recognition.continuous = true;
+
+            const inputEl = document.getElementById('bag-input');
+            const initialText = inputEl.value ? inputEl.value + ' ' : '';
+            let finalTranscript = '';
+
+            recognition.onstart = () => {
+                isRecording = true;
+                document.getElementById('voice-status').classList.remove('hidden');
+                document.getElementById('voice-btn').classList.add('border-rose-500/50', 'bg-rose-500/15');
+            };
+
+            recognition.onresult = (event) => {
+                let interim = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript + ' ';
+                    } else {
+                        interim += event.results[i][0].transcript;
+                    }
+                }
+                inputEl.value = initialText + finalTranscript + interim;
+            };
+
+            recognition.onerror = () => {
+                stopVoiceUI();
+            };
+
+            recognition.onend = () => {
+                stopVoiceUI();
+            };
+
+            recognition.start();
+        }
+
+        function stopVoiceUI() {
+            isRecording = false;
+            document.getElementById('voice-status').classList.add('hidden');
+            document.getElementById('voice-btn').classList.remove('border-rose-500/50', 'bg-rose-500/15');
+        }
+
+        // =========================================================================
+        // 6. ОТРИСОВКА ИНТЕРФЕЙСА, ПОИСК И УПРАВЛЕНИЕ КАРТОЧКАМИ
+        // =========================================================================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[m]);
+        }
+
+        function formatRelativeTime(timestamp) {
+            const diffSec = Math.floor((Date.now() - timestamp) / 1000);
+            if (diffSec < 60) return 'только что';
+            if (diffSec < 3600) return `${Math.floor(diffSec / 60)} мин. назад`;
+            if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} ч. назад`;
+            return new Date(timestamp).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+        }
+
+        function renderCategoryTabs() {
+            const container = document.getElementById('category-tabs');
+            container.innerHTML = CATEGORIES.map(cat => {
+                const count = cat.id === 'all'
+                    ? bagItems.length
+                    : bagItems.filter(i => i.category === cat.id).length;
+                const isActive = activeCategory === cat.id && aiFilteredIds === null;
+                return `
+                    <button
+                        onclick="selectCategory('${cat.id}')"
+                        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition cursor-pointer border ${
+                            isActive
+                                ? 'bg-amethyst-600/25 text-gold-300 border-gold-400/40 shadow-sm'
+                                : 'bg-void-900/60 text-slate-400 hover:text-slate-200 border-white/5 hover:border-white/15'
+                        }"
+                    >
+                        <i data-lucide="${cat.icon}" class="w-3.5 h-3.5 ${isActive ? 'text-gold-400' : ''}"></i>
+                        <span>${cat.name}</span>
+                        <span class="px-1.5 py-0.2 rounded-md text-[10px] ${isActive ? 'bg-gold-400/20 text-gold-300' : 'bg-white/5 text-slate-400'}">${count}</span>
+                    </button>
+                `;
+            }).join('');
+            document.getElementById('total-items-badge').textContent = bagItems.length;
+        }
+
+        function selectCategory(catId) {
+            activeCategory = catId;
+            if (aiFilteredIds !== null) {
+                clearSearch();
+                return;
+            }
+            renderCategoryTabs();
+            renderItems();
+        }
+
+        function handleInstantSearch() {
+            const val = document.getElementById('search-input').value;
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (val.trim()) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            if (aiFilteredIds !== null) {
+                aiFilteredIds = null;
+                document.getElementById('ai-search-banner').classList.add('hidden');
+                renderCategoryTabs();
+            }
+            renderItems();
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('clear-search-btn').classList.add('hidden');
+            document.getElementById('ai-search-banner').classList.add('hidden');
+            aiFilteredIds = null;
+            renderCategoryTabs();
+            renderItems();
+        }
+
+        function renderItems() {
+            const grid = document.getElementById('items-grid');
+            const emptyState = document.getElementById('empty-state');
+            const query = document.getElementById('search-input').value.trim().toLowerCase();
+
+            let filtered = [...bagItems];
+
+            if (aiFilteredIds !== null) {
+                filtered = aiFilteredIds
+                    .map(id => bagItems.find(item => item.id === id))
+                    .filter(Boolean);
+            } else {
+                if (activeCategory !== 'all') {
+                    filtered = filtered.filter(i => i.category === activeCategory);
+                }
+                if (query) {
+                    filtered = filtered.filter(i =>
+                        (i.title && i.title.toLowerCase().includes(query)) ||
+                        (i.content && i.content.toLowerCase().includes(query)) ||
+                        (i.summary && i.summary.toLowerCase().includes(query)) ||
+                        (i.tags && i.tags.some(t => t.toLowerCase().includes(query))) ||
+                        (i.file?.name && i.file.name.toLowerCase().includes(query))
+                    );
+                }
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                lucide.createIcons();
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = filtered.map(item => {
+                const badgeStyle = CATEGORY_STYLES[item.category] || 'bg-slate-700/40 text-slate-300 border-white/10';
+                const isTask = item.category === 'Напоминания и задачи' || item.deadline;
+                const urlMatch = (item.content || '').match(/https?:\/\/[^\s]+/);
+
+                return `
+                <article onclick="openItemModal('${item.id}')" class="glass-card item-appear rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-3.5 cursor-pointer group relative">
+                    <div class="space-y-2.5">
+                        <!-- Верхняя строка карточки -->
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-medium border ${badgeStyle}">
+                                ${escapeHtml(item.category)}
+                            </span>
+                            <span class="text-[11px] text-slate-500">${formatRelativeTime(item.createdAt)}</span>
+                        </div>
+
+                        <!-- Заголовок (с чекбоксом для задач) -->
+                        <div class="flex items-start gap-2.5">
+                            ${isTask ? `
+                                <input type="checkbox" ${item.completed ? 'checked' : ''} onclick="event.stopPropagation(); toggleItemCompleted('${item.id}', this.checked)" class="mt-1 w-4 h-4 rounded accent-gold-400 cursor-pointer shrink-0">
+                            ` : ''}
+                            <h3 class="font-semibold text-slate-100 group-hover:text-gold-300 transition leading-snug line-clamp-2 ${item.completed ? 'line-through text-slate-500' : ''}">
+                                ${escapeHtml(item.title)}
+                            </h3>
+                        </div>
+
+                        <!-- Дедлайн если есть -->
+                        ${item.deadline ? `
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-gold-300">
+                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                <span>${escapeHtml(item.deadline)}</span>
+                            </div>
+                        ` : ''}
+
+                        <!-- Превью контента или выжимка -->
+                        ${item.content ? `
+                            <p class="text-xs text-slate-400 leading-relaxed line-clamp-3 ${item.category === 'Код и скрипты' ? 'font-mono bg-void-950/70 p-2.5 rounded-xl border border-white/5 text-slate-300' : ''}">
+                                ${escapeHtml(item.content)}
+                            </p>
+                        ` : (item.summary ? `<p class="text-xs text-slate-400 italic line-clamp-2">${escapeHtml(item.summary)}</p>` : '')}
+
+                        <!-- Вложение файла -->
+                        ${item.file ? `
+                            <div class="p-2.5 rounded-xl bg-void-950/70 border border-white/10 flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <i data-lucide="${item.file.type.startsWith('image/') ? 'image' : 'file-text'}" class="w-4 h-4 text-amethyst-400 shrink-0"></i>
+                                    <span class="text-xs text-slate-300 truncate">${escapeHtml(item.file.name)}</span>
+                                </div>
+                                <span class="text-[10px] text-slate-500 shrink-0">${item.file.sizeFormatted}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Нижняя панель: Теги и быстрые действия -->
+                    <div class="pt-2 border-t border-white/5 flex items-center justify-between gap-2">
+                        <div class="flex flex-wrap gap-1.5 overflow-hidden max-h-6">
+                            ${(item.tags || []).map(tag => `
+                                <span class="text-[11px] text-slate-400 bg-white/5 px-2 py-0.5 rounded-md">#${escapeHtml(tag)}</span>
+                            `).join('')}
+                        </div>
+
+                        <div class="flex items-center gap-1 shrink-0" onclick="event.stopPropagation()">
+                            ${urlMatch ? `
+                                <a href="${escapeHtml(urlMatch[0])}" target="_blank" rel="noopener noreferrer" title="Открыть ссылку" class="p-1.5 rounded-lg text-slate-400 hover:text-gold-300 hover:bg-white/10 transition">
+                                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                </a>
+                            ` : ''}
+                            <button onclick="quickCopyItem('${item.id}')" title="Копировать" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function renderAll() {
+            renderCategoryTabs();
+            renderItems();
+        }
+
+        async function toggleItemCompleted(id, checked) {
+            const item = bagItems.find(i => i.id === id);
+            if (!item) return;
+            item.completed = checked;
+            await saveAllItemsToDB(bagItems);
+            renderItems();
+        }
+
+        function quickCopyItem(id) {
+            const item = bagItems.find(i => i.id === id);
+            if (!item) return;
+            copyTextToClipboard(item.content || item.title);
+            showToast('Скопировано в буфер обмена', 'success');
+        }
+
+        // =========================================================================
+        // 7. МОДАЛЬНОЕ ОКНО ПРОСМОТРА И РЕДАКТИРОВАНИЯ ПРЕДМЕТА
+        // =========================================================================
+        function openItemModal(id) {
+            const item = bagItems.find(i => i.id === id);
+            if (!item) return;
+            currentOpenedItemId = id;
+
+            document.getElementById('modal-category-badge').textContent = item.category;
+            document.getElementById('modal-date').textContent = new Date(item.createdAt).toLocaleString('ru-RU');
+            document.getElementById('modal-title-input').value = item.title;
+            document.getElementById('modal-summary').textContent = item.summary ? `✨ ${item.summary}` : '';
+            document.getElementById('modal-content-input').value = item.content || '';
+            document.getElementById('modal-tags-input').value = (item.tags || []).join(', ');
+            document.getElementById('modal-ai-response').classList.add('hidden');
+            document.getElementById('modal-ai-response').textContent = '';
+
+            // Блок задачи / дедлайна
+            const taskBox = document.getElementById('modal-task-box');
+            if (item.category === 'Напоминания и задачи' || item.deadline) {
+                taskBox.classList.remove('hidden');
+                document.getElementById('modal-task-done').checked = !!item.completed;
+                document.getElementById('modal-deadline').textContent = item.deadline ? `Срок: ${item.deadline}` : 'Без жесткого срока';
+            } else {
+                taskBox.classList.add('hidden');
+            }
+
+            // Блок файла
+            const fileBox = document.getElementById('modal-file-box');
+            const imgPreview = document.getElementById('modal-image-preview');
+            if (item.file) {
+                fileBox.classList.remove('hidden');
+                document.getElementById('modal-file-name').textContent = item.file.name;
+                document.getElementById('modal-file-meta').textContent = `${item.file.type} • ${item.file.sizeFormatted}`;
+                document.getElementById('modal-download-btn').onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = item.file.dataUrl;
+                    a.download = item.file.name;
+                    a.click();
+                };
+                if (item.file.type.startsWith('image/')) {
+                    imgPreview.src = item.file.dataUrl;
+                    imgPreview.classList.remove('hidden');
+                } else {
+                    imgPreview.classList.add('hidden');
+                }
+            } else {
+                fileBox.classList.add('hidden');
+            }
+
+            document.getElementById('item-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeItemModal() {
+            document.getElementById('item-modal').classList.add('hidden');
+            currentOpenedItemId = null;
+        }
+
+        async function updateCurrentItemField(field, value) {
+            const item = bagItems.find(i => i.id === currentOpenedItemId);
+            if (!item) return;
+            item[field] = value;
+            await saveAllItemsToDB(bagItems);
+            renderAll();
+        }
+
+        async function updateCurrentItemTags(tagsString) {
+            const item = bagItems.find(i => i.id === currentOpenedItemId);
+            if (!item) return;
+            item.tags = tagsString.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+            await saveAllItemsToDB(bagItems);
+            renderAll();
+        }
+
+        async function deleteCurrentItem() {
+            if (!currentOpenedItemId) return;
+            bagItems = bagItems.filter(i => i.id !== currentOpenedItemId);
+            await saveAllItemsToDB(bagItems);
+            closeItemModal();
+            renderAll();
+            showToast('Предмет удалён из сумки', 'info');
+        }
+
+        function copyCurrentItem() {
+            const item = bagItems.find(i => i.id === currentOpenedItemId);
+            if (!item) return;
+            copyTextToClipboard(`${item.title}\n\n${item.content || ''}`.trim());
+            showToast('Содержимое скопировано', 'success');
+        }
+
+        // Опустошение сумки
+        function confirmEmptyBag() {
+            document.getElementById('confirm-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        async function executeEmptyBag() {
+            bagItems = [];
+            await saveAllItemsToDB(bagItems);
+            document.getElementById('confirm-modal').classList.add('hidden');
+            clearSearch();
+            renderAll();
+            showToast('Сумка полностью опустошена', 'info');
+        }
+
+        async function restoreDemoItems() {
+            bagItems = getDemoItems();
+            await saveAllItemsToDB(bagItems);
+            renderAll();
+            showToast('Демонстрационные предметы разложены по полкам!', 'success');
+        }
+
+        // =========================================================================
+        // 8. ПРИВЯЗКА И СИНХРОНИЗАЦИЯ С GOOGLE ДИСКОМ (OAuth 2.0 + JSON Бэкап)
+        // =========================================================================
+        function openDriveModal() {
+            const savedClientId = localStorage.getItem('hermione_gdrive_client_id') || '';
+            document.getElementById('gdrive-client-id').value = savedClientId;
+            document.getElementById('drive-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeDriveModal() {
+            document.getElementById('drive-modal').classList.add('hidden');
+        }
+
+        function updateDriveUI(connected, message = '') {
+            const dot = document.getElementById('gdrive-dot');
+            const text = document.getElementById('gdrive-status-text');
+            const quickBtn = document.getElementById('gdrive-quick-sync');
+            const modalStatus = document.getElementById('drive-modal-status');
+            const modalBadge = document.getElementById('drive-modal-badge');
+            const connectedActions = document.getElementById('gdrive-connected-actions');
+
+            if (connected) {
+                dot.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]';
+                text.textContent = 'Диск подключен';
+                quickBtn.classList.remove('hidden');
+                modalStatus.textContent = 'Синхронизация с папкой «Сумка Гермионы» на Google Диске';
+                modalBadge.textContent = 'Подключено';
+                modalBadge.className = 'px-2.5 py-1 rounded-full text-xs bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+                connectedActions.classList.remove('hidden');
+            } else {
+                dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+                text.textContent = 'Google Диск';
+                quickBtn.classList.add('hidden');
+                modalStatus.textContent = 'Локальное хранилище браузера (Автосохранение)';
+                modalBadge.textContent = 'Локально';
+                modalBadge.className = 'px-2.5 py-1 rounded-full text-xs bg-amber-500/15 text-amber-300 border border-amber-500/30';
+                connectedActions.classList.add('hidden');
+            }
+            if (message) {
+                document.getElementById('drive-last-sync').textContent = message;
+            }
+        }
+
+        function connectGoogleDriveOAuth() {
+            const clientId = document.getElementById('gdrive-client-id').value.trim();
+            if (!clientId) {
+                showToast('Введите OAuth 2.0 Client ID для подключения Google Диска.', 'info');
+                return;
+            }
+            localStorage.setItem('hermione_gdrive_client_id', clientId);
+
+            if (!window.google || !google.accounts || !google.accounts.oauth2) {
+                showToast('Скрипт авторизации Google ещё загружается. Попробуйте через секунду.', 'info');
+                return;
+            }
+
+            try {
+                const tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: clientId,
+                    scope: 'https://www.googleapis.com/auth/drive.file',
+                    callback: async (tokenResponse) => {
+                        if (tokenResponse && tokenResponse.access_token) {
+                            gdriveAccessToken = tokenResponse.access_token;
+                            updateDriveUI(true, 'Авторизация выполнена');
+                            showToast('Google Диск успешно привязан к сумке!', 'success');
+                            await syncWithGoogleDrive();
+                        }
+                    }
+                });
+                tokenClient.requestAccessToken({ prompt: 'consent' });
+            } catch (err) {
+                showToast('Ошибка инициализации Google OAuth. Проверьте корректность Client ID.', 'error');
+            }
+        }
+
+        function disconnectGoogleDrive() {
+            gdriveAccessToken = null;
+            updateDriveUI(false, '');
+            showToast('Облачная сессия Google Диска отключена. Локальные данные сохранены.', 'info');
+        }
+
+        // Реальная работа с Google Drive API v3 (создание папки «Сумка Гермионы» и файла индекса)
+        async function syncWithGoogleDrive(silent = false) {
+            if (!gdriveAccessToken) return;
+            try {
+                // 1. Проверяем или создаем папку «Сумка Гермионы»
+                if (!gdriveFolderId) {
+                    const searchRes = await fetch(
+                        `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent("name='Сумка Гермионы' and mimeType='application/vnd.google-apps.folder' and trashed=false")}`,
+                        { headers: { Authorization: `Bearer ${gdriveAccessToken}` } }
+                    );
+                    const searchData = await searchRes.json();
+                    if (searchData.files && searchData.files.length > 0) {
+                        gdriveFolderId = searchData.files[0].id;
+                    } else {
+                        const createFolderRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+                            method: 'POST',
+                            headers: {
+                                Authorization: `Bearer ${gdriveAccessToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                name: 'Сумка Гермионы',
+                                mimeType: 'application/vnd.google-apps.folder'
+                            })
+                        });
+                        const folderData = await createFolderRes.json();
+                        gdriveFolderId = folderData.id;
+                    }
+                    localStorage.setItem('hermione_gdrive_folder_id', gdriveFolderId);
+                }
+
+                // 2. Сохраняем или обновляем файл hermione_bag_storage.json
+                const payloadBlob = new Blob([JSON.stringify({
+                    version: 1,
+                    updatedAt: new Date().toISOString(),
+                    items: bagItems
+                }, null, 2)], { type: 'application/json' });
+
+                if (!gdriveFileId) {
+                    const metadata = {
+                        name: 'hermione_bag_storage.json',
+                        parents: [gdriveFolderId]
+                    };
+                    const form = new FormData();
+                    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                    form.append('file', payloadBlob);
+
+                    const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${gdriveAccessToken}` },
+                        body: form
+                    });
+                    const uploadData = await uploadRes.json();
+                    gdriveFileId = uploadData.id;
+                    localStorage.setItem('hermione_gdrive_file_id', gdriveFileId);
+                } else {
+                    await fetch(`https://www.googleapis.com/upload/drive/v3/files/${gdriveFileId}?uploadType=media`, {
+                        method: 'PATCH',
+                        headers: {
+                            Authorization: `Bearer ${gdriveAccessToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: payloadBlob
+                    });
+                }
+
+                const timeStr = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                updateDriveUI(true, `Последняя синхронизация с Диском: ${timeStr}`);
+                if (!silent) {
+                    showToast('Сумка синхронизирована с Google Диском!', 'success');
+                }
+            } catch (e) {
+                if (!silent) {
+                    showToast('Не удалось обновить файл на Google Диске. Проверьте токен.', 'error');
+                }
+            }
+        }
+
+        // Экспорт и импорт единого JSON-слепка для Google Диска
+        function exportBagBackup() {
+            const dataStr = JSON.stringify({
+                app: 'HermioneBag',
+                exportedAt: new Date().toISOString(),
+                items: bagItems
+            }, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dateTag = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `Сумка_Гермионы_${dateTag}.hermione.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Слепок сумки скачан! Загрузите его в любую папку Google Диска.', 'success');
+        }
+
+        function importBagBackup(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async () => {
+                try {
+                    const parsed = JSON.parse(reader.result);
+                    const importedItems = Array.isArray(parsed) ? parsed : parsed.items;
+                    if (!Array.isArray(importedItems)) throw new Error('Неверный формат');
+
+                    // Объединяем без дубликатов по ID
+                    const existingIds = new Set(bagItems.map(i => i.id));
+                    let addedCount = 0;
+                    importedItems.forEach(item => {
+                        if (item.id && !existingIds.has(item.id)) {
+                            bagItems.push(item);
+                            addedCount++;
+                        }
+                    });
+                    bagItems.sort((a, b) => b.createdAt - a.createdAt);
+                    await saveAllItemsToDB(bagItems);
+                    renderAll();
+                    closeDriveModal();
+                    showToast(`Восстановлено предметов из слепка: ${addedCount}`, 'success');
+                } catch (e) {
+                    showToast('Не удалось прочитать файл слепка сумки.', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // =========================================================================
+        // 9. УТИЛИТЫ (Копирование в буфер и кастомные уведомления)
+        // =========================================================================
+        function copyTextToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                console.warn('Не удалось скопировать текст', err);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'border-emerald-500/40 bg-void-900/95 text-emerald-200',
+                error: 'border-rose-500/40 bg-void-900/95 text-rose-200',
+                info: 'border-gold-400/35 bg-void-900/95 text-slate-100'
+            };
+            const icons = {
+                success: 'check-circle',
+                error: 'alert-circle',
+                info: 'sparkles'
+            };
+
+            toast.className = `pointer-events-auto glass-panel rounded-xl px-4 py-3 border shadow-xl flex items-center gap-2.5 text-xs sm:text-sm item-appear ${colors[type] || colors.info}`;
+            toast.innerHTML = `
+                <i data-lucide="${icons[type] || 'sparkles'}" class="w-4 h-4 shrink-0 text-gold-400"></i>
+                <span class="leading-snug">${escapeHtml(message)}</span>
+            `;
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(8px)';
+                toast.style.transition = 'all 0.25s ease';
+                setTimeout(() => toast.remove(), 260);
+            }, 3400);
+        }
+
+        // =========================================================================
+        // 10. ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
+        // =========================================================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            setupDragAndDrop();
+            const isFirstRun = !localStorage.getItem('hermione_initialized');
+            const loaded = await loadItemsFromDB();
+
+            if (loaded.length === 0 && isFirstRun) {
+                bagItems = getDemoItems();
+                localStorage.setItem('hermione_initialized', 'true');
+                await saveAllItemsToDB(bagItems);
+            } else {
+                bagItems = loaded;
+                localStorage.setItem('hermione_initialized', 'true');
+            }
+
+            renderAll();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
